@@ -236,6 +236,34 @@ func TestJob(t *testing.T) {
 	}
 }
 
+func TestPersistence(t *testing.T) {
+	// Start, save to disk,
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+
+	cron := New()
+	cron.AddJob("0 0 0 30 Feb ?", testJob{wg, "job0"})
+	cron.AddJob("0 0 0 1 1 ?", testJob{wg, "job1"})
+	cron.AddJob("* * * * * ?", testJob{wg, "job2"})
+	cron.AddJob("1 0 0 1 1 ?", testJob{wg, "job3"})
+	cron.Schedule(Every(5*time.Second+5*time.Nanosecond), testJob{wg, "job4"})
+	cron.Schedule(Every(5*time.Minute), testJob{wg, "job5"})
+
+	cron.Start()
+	cron.Stop()
+
+	// cron shut down
+	cron.AddFunc("* * * * * ?", func() { wg.Done() })
+
+	select {
+	case <-time.After(ONE_SECOND):
+		// No job ran!
+	case <-wait(wg):
+		t.FailNow()
+	}
+
+}
+
 func wait(wg *sync.WaitGroup) chan bool {
 	ch := make(chan bool)
 	go func() {

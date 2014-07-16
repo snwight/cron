@@ -182,6 +182,10 @@ func (c *Cron) run() {
 func (c *Cron) Stop() {
 	c.stop <- struct{}{}
 	c.running = false
+	// snwight 071614
+	// i need this to happen when i call Stop()
+	// this may not be appropriate for other clients
+	c.entries = nil
 }
 
 // entrySnapshot returns a copy of the current cron entry list.
