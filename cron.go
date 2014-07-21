@@ -182,6 +182,11 @@ func (c *Cron) run() {
 func (c *Cron) Stop() {
 	c.stop <- struct{}{}
 	c.running = false
+}
+
+// Stop the cron scheduler and all pending jobs.
+func (c *Cron) FullStop() {
+	c.Stop()
 	// snwight 071614
 	// i need this to happen when i call Stop()
 	// this may not be appropriate for other clients
