@@ -3,7 +3,6 @@
 package cron
 
 import (
-	"log"
 	"sort"
 	"time"
 )
@@ -157,7 +156,7 @@ func (c *Cron) run() {
 					break
 				}
 
-//				log.Printf("CRON: %v, entries: %v, running: %+v\n", &c, c.entries, e)
+				// log.Printf("CRON: %v, entries: %v, running: %+v\n", &c, c.entries, e)
 
 				go e.Job.Run()
 
