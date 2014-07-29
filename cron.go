@@ -3,6 +3,7 @@
 package cron
 
 import (
+	"log"
 	"sort"
 	"time"
 )
@@ -133,6 +134,8 @@ func (c *Cron) run() {
 	now := time.Now().Local()
 	for _, entry := range c.entries {
 		entry.Next = entry.Schedule.Next(now)
+
+		log.Printf("CRON: %v, run() loop, entries: %v\n", &c, c.entries)
 	}
 
 	for {
@@ -141,11 +144,18 @@ func (c *Cron) run() {
 
 		var effective time.Time
 		if len(c.entries) == 0 || c.entries[0].Next.IsZero() {
+
 			// If there are no entries yet, just sleep - it still handles new entries
 			// and stop requests.
 			effective = now.AddDate(10, 0, 0)
+
+			log.Printf("CRON: %v, NO entries\n", &c, effective)
+
 		} else {
 			effective = c.entries[0].Next
+
+			log.Printf("CRON: %v, effective: \n", &c, effective)
+
 		}
 
 		select {
@@ -156,7 +166,7 @@ func (c *Cron) run() {
 					break
 				}
 
-				// log.Printf("CRON: %v, entries: %v, running: %+v\n", &c, c.entries, e)
+				log.Printf("CRON: %v, entries: %v, running: %+v\n", &c, c.entries, e)
 
 				go e.Job.Run()
 
@@ -168,6 +178,8 @@ func (c *Cron) run() {
 		case newEntry := <-c.add:
 			c.entries = append(c.entries, newEntry)
 			newEntry.Next = newEntry.Schedule.Next(now)
+
+			log.Printf("CRON: %v, <-c.add newEntry %v to entries: %v\n", &c, newEntry, c.entries)
 
 		case <-c.snapshot:
 			c.snapshot <- c.entrySnapshot()
