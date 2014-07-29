@@ -149,12 +149,12 @@ func (c *Cron) run() {
 			// and stop requests.
 			effective = now.AddDate(10, 0, 0)
 
-			log.Printf("CRON: %v, NO entries\n", &c, effective)
+			log.Printf("CRON: %v, NO entries, %v\n", &c, *effective)
 
 		} else {
 			effective = c.entries[0].Next
 
-			log.Printf("CRON: %v, effective: \n", &c, effective)
+			log.Printf("CRON: %v, effective: %v\n", &c, *effective)
 
 		}
 
