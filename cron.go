@@ -3,6 +3,7 @@
 package cron
 
 import (
+	"log"
 	"sort"
 	"time"
 )
@@ -107,7 +108,6 @@ func (c *Cron) Schedule(schedule Schedule, cmd Job) {
 		c.entries = append(c.entries, entry)
 		return
 	}
-
 	c.add <- entry
 }
 
@@ -156,7 +156,11 @@ func (c *Cron) run() {
 				if e.Next != effective {
 					break
 				}
+
+				log.Printf("CRON: %v\n\tentries: %v\n\trunning: %+v\n", &c, c.entries, e)
+
 				go e.Job.Run()
+
 				e.Prev = e.Next
 				e.Next = e.Schedule.Next(effective)
 			}
