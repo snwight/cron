@@ -133,16 +133,13 @@ func (c *Cron) Start() {
 // Run the scheduler.. this is private just due to the need to synchronize
 // access to the 'running' state variable.
 func (c *Cron) run() {
-
-	log.Printf("CRON: %v, entering RUN(), entries: %v\n", &c, c.entries)
-
 	// Figure out the next activation times for each entry.
 	now := time.Now().Local()
 	for _, entry := range c.entries {
 		entry.Next = entry.Schedule.Next(now)
 
-		log.Printf("CRON: %v, run() loop, entries: %v\n", &c, c.entries)
 	}
+	log.Printf("CRON: %v, run() loop, entries: %v\n", &c, c.entries)
 
 	for {
 		// Determine the next entry to run.
@@ -155,7 +152,7 @@ func (c *Cron) run() {
 			// and stop requests.
 			effective = now.AddDate(10, 0, 0)
 
-			log.Printf("CRON: %v, NO entries, effective%v\n", &c, effective)
+			log.Printf("CRON: %v, NO entries, effective %v\n", &c, effective)
 
 		} else {
 			effective = c.entries[0].Next
