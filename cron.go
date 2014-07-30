@@ -124,12 +124,18 @@ func (c *Cron) Entries() []*Entry {
 // Start the cron scheduler in its own go-routine.
 func (c *Cron) Start() {
 	c.running = true
+
+	log.Printf("CRON: %v, START(): invoking go c.run(), entries: %v\n", &c, c.entries)
+
 	go c.run()
 }
 
 // Run the scheduler.. this is private just due to the need to synchronize
 // access to the 'running' state variable.
 func (c *Cron) run() {
+
+	log.Printf("CRON: %v, entering RUN(), entries: %v\n", &c, c.entries)
+
 	// Figure out the next activation times for each entry.
 	now := time.Now().Local()
 	for _, entry := range c.entries {
@@ -166,7 +172,7 @@ func (c *Cron) run() {
 					break
 				}
 
-				log.Printf("CRON: %v, entries: %v, running: %+v\n", &c, c.entries, e)
+				log.Printf("CRON: %v, entries: %v, now running: %+v\n", &c, c.entries, e)
 
 				go e.Job.Run()
 
@@ -190,6 +196,8 @@ func (c *Cron) run() {
 
 		// 'now' should be updated after newEntry and snapshot cases.
 		now = time.Now().Local()
+
+		log.Printf("CRON: %v, now %v\n", &c, now)
 	}
 }
 
