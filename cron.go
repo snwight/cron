@@ -152,8 +152,6 @@ func (c *Cron) run() {
 			// and stop requests.
 			effective = now.AddDate(10, 0, 0)
 
-			log.Printf("CRON: %v, NO entries, effective %v\n", &c, effective)
-
 		} else {
 			effective = c.entries[0].Next
 
@@ -164,12 +162,14 @@ func (c *Cron) run() {
 		select {
 		case now = <-time.After(effective.Sub(now)):
 			// Run every entry whose next time was this effective time.
-			for _, e := range c.entries {
+			for i, e := range c.entries {
 				if e.Next != effective {
 					break
 				}
 
-				log.Printf("CRON: %v, entries: %v, now running: %+v\n", &c, c.entries, e)
+				if i > 0 {
+					log.Printf("CRON: simultaneous count %v, %v, entries: %v, now running: %+v\n", i+1, &c, c.entries, e)
+				}
 
 				go e.Job.Run()
 
@@ -182,8 +182,6 @@ func (c *Cron) run() {
 			c.entries = append(c.entries, newEntry)
 			newEntry.Next = newEntry.Schedule.Next(now)
 
-			log.Printf("CRON: %v, <-c.add newEntry %v to entries: %v\n", &c, newEntry, c.entries)
-
 		case <-c.snapshot:
 			c.snapshot <- c.entrySnapshot()
 
@@ -193,8 +191,6 @@ func (c *Cron) run() {
 
 		// 'now' should be updated after newEntry and snapshot cases.
 		now = time.Now().Local()
-
-		log.Printf("CRON: %v, now %v\n", &c, now)
 	}
 }
 
