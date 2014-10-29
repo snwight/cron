@@ -3,7 +3,6 @@
 package cron
 
 import (
-	"log"
 	"sort"
 	"time"
 )
@@ -124,9 +123,6 @@ func (c *Cron) Entries() []*Entry {
 // Start the cron scheduler in its own go-routine.
 func (c *Cron) Start() {
 	c.running = true
-
-	log.Printf("CRON: %v, START(): invoking go c.run(), entries: %v\n", &c, c.entries)
-
 	go c.run()
 }
 
@@ -139,8 +135,6 @@ func (c *Cron) run() {
 		entry.Next = entry.Schedule.Next(now)
 
 	}
-	log.Printf("CRON: %v, run() loop, entries: %v\n", &c, c.entries)
-
 	for {
 		// Determine the next entry to run.
 		sort.Sort(byTime(c.entries))
@@ -154,9 +148,6 @@ func (c *Cron) run() {
 
 		} else {
 			effective = c.entries[0].Next
-
-			log.Printf("CRON: %v, effective: %v\n", &c, effective)
-
 		}
 
 		select {
@@ -165,10 +156,6 @@ func (c *Cron) run() {
 			for i, e := range c.entries {
 				if e.Next != effective {
 					break
-				}
-
-				if i > 0 {
-					log.Printf("CRON: simultaneous count %v, %v, entries: %v, now running: %+v\n", i+1, &c, c.entries, e)
 				}
 
 				go e.Job.Run()
